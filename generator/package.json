@@ -1,0 +1,22 @@
+{
+  "name": "generator",
+  "version": "1.0.0",
+  "description": "OCI Pi Cluster Broadcaster",
+  "main": "gen.js",
+  "scripts": {
+    "start": "nodemon src/gen.js | pino-pretty"
+  },
+  "type": "module",
+  "author": "Victor Martin Alvarez (victor.martin.alvarez@oracle.com)",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.2",
+    "pino": "^8.5.0",
+    "shortid": "^2.2.16",
+    "socket.io-client": "^4.5.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19",
+    "pino-pretty": "^9.1.0"
+  }
+}
