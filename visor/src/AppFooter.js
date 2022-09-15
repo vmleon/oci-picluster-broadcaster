@@ -1,5 +1,5 @@
 import {Space} from 'antd';
-import {FieldTimeOutlined, DisconnectOutlined, CheckCircleOutlined} from '@ant-design/icons';
+import {DisconnectOutlined, CheckCircleOutlined} from '@ant-design/icons';
 import {Statistic} from 'antd';
 
 function AppFooter({isConnected, clusterSize}) {

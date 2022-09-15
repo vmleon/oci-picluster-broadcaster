@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import {io} from 'socket.io-client';
 import {Layout} from 'antd';
 import {Typography} from 'antd';
 import {Space} from 'antd';
@@ -8,49 +7,43 @@ import AppFooter from './AppFooter';
 const {Header, Footer, Content} = Layout;
 const {Title} = Typography;
 
-const socket = io('ws://localhost:3001');
-
 const worker = new Worker(new URL('./commsWorker.js', import.meta.url));
 
-worker.onmessage = ({data}) => {
-  console.log(data);
-};
-
-worker.postMessage({number: 0});
-
-socket.io.on('error', (error) => console.error(`error: ${error}`));
+worker.postMessage({message: 'Hello from client'});
 
 function App() {
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [isConnected, setIsConnected] = useState(false); // socket.connected);
   const [cluster, setCluster] = useState({});
 
   useEffect(() => {
-    socket.on('connect', () => {
-      setIsConnected(true);
-    });
+    worker.onmessage = ({data: message}) => {
+      const {type, data, id, error} = message;
+      if (error) {
+        console.error(error);
+      }
+      switch (type) {
+        case 'connect':
+          const isConnected = data;
+          setIsConnected(isConnected);
+          if (!isConnected) {
+            setCluster({});
+          }
+          break;
+        case 'event':
+          setCluster({...cluster, ...data});
+          break;
+        case 'all':
+          setCluster(data);
 
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-      setCluster({});
-    });
+          break;
 
-    socket.on('cluster.event', ({id, data}) => {
-      const newEntry = {};
-      newEntry[id] = data;
-      setCluster({...cluster, ...newEntry});
-    });
-
-    socket.on('cluster.all', (cluster) => {
-      console.log('cluster.all');
-      setCluster(cluster);
-    });
-
-    return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('pong');
+        default:
+          break;
+      }
     };
-  }, [cluster]);
+
+    return () => {};
+  }, [cluster, isConnected]);
 
   return (
     <Layout>
