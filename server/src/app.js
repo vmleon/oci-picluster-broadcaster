@@ -6,7 +6,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const NODE_ENV = process.env.NODE_ENV;
-// const BROADCAST_REFRESH_UPDATE = process.env.BROADCAST_REFRESH_UPDATE;
+const BROADCAST_REFRESH_UPDATE = process.env.BROADCAST_REFRESH_UPDATE;
 const PORT = process.env.PORT || 3000;
 const CORS_URL = process.env.CORS_URL || '*';
 
@@ -15,6 +15,8 @@ const logger = pino({level: NODE_ENV === 'production' ? 'info' : 'debug'});
 const httpServer = createServer();
 
 let cluster = {};
+
+let clusterCache = {};
 
 const io = new Server(httpServer, {
   cors: {
@@ -27,10 +29,15 @@ io.on('connection', (socket) => {
   socket.emit('cluster.all', cluster);
 
   socket.on('cluster.update', ({id, data}) => {
-    logger.debug(`cluster.update {${id}: ${data.temp}}`);
+    clusterCache[id] = data;
     cluster[id] = data;
-    io.emit('cluster.event', {id, data});
   });
 });
+
+setInterval(() => {
+  logger.debug(`cluster.event with ${Object.keys(clusterCache).length} data points`);
+  io.emit('cluster.event', clusterCache);
+  clusterCache = {};
+}, BROADCAST_REFRESH_UPDATE);
 
 httpServer.listen(PORT, () => logger.info(`Server listening to port ${PORT}`));

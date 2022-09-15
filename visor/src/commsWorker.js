@@ -14,8 +14,8 @@ socket.on('disconnect', () => {
   postMessage({type: 'connect', data: false});
 });
 
-socket.on('cluster.event', ({id, data}) => {
-  clusterCache[id] = data;
+socket.on('cluster.event', (data) => {
+  clusterCache = {...clusterCache, ...data};
 });
 
 setInterval(() => {
