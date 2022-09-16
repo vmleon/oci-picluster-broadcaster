@@ -12,6 +12,7 @@
   "dependencies": {
     "dotenv": "^16.0.2",
     "pino": "^8.5.0",
+    "shortid": "^2.2.16",
     "socket.io": "^4.5.2"
   },
   "devDependencies": {
