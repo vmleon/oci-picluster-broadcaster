@@ -1,0 +1,64 @@
+---
+- name: Install NGINX and Node
+  dnf:
+    name:
+      - nginx
+      - "@nodejs:16"
+    update_cache: yes
+- name: Set httpd_can_network_connect flag on
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+- name: Enable nginx
+  service:
+    name: nginx.service
+    state: started
+    enabled: yes
+- name: Copy NGINX config file
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+  notify: restart nginx
+- name: Copy web static files
+  copy:
+    src: ../../../../../visor/build/
+    dest: /usr/share/nginx/html/
+  notify: restart nginx
+- name: Copy server files
+  copy:
+    src: "../../../../../server/{{ item }}"
+    dest: /home/opc/server/
+    owner: opc
+  with_items:
+  - "src/app.js"
+  - "package.json"
+  - "package-lock.json"
+- name: Copy env file
+  template:
+    src: ../files/env.j2
+    dest: /home/opc/server/.env
+    owner: opc
+    group: opc
+    mode: 0744
+- name: Install dependencies
+  command: npm install
+  become: true
+  become_user: opc
+  args:
+    chdir: /home/opc/server/
+- name: Install pm2
+  command: npm install pm2 -g
+- name: Run WebSocket Server
+  command: pm2 --node-args="--max-old-space-size=512" -f start app.js
+  become: true
+  become_user: opc
+  args:
+    chdir: /home/opc/server/
+- name: Add firewall ports
+  firewalld:
+    zone: public
+    service: http
+    permanent: yes
+    immediate: yes
+    state: enabled
