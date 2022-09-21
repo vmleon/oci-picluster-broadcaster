@@ -19,7 +19,7 @@ fi
 banner "Build web"
 cd $BASE_DIR/visor
 npm install
-npm run build
+NODE_ENV=production npm run build
 
 banner "Terraform Init"
 cd $BASE_DIR/deploy/terraform

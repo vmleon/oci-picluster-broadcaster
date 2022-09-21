@@ -4,3 +4,8 @@
   become: true
   roles:
     - server
+- name: Web Servers
+  hosts: webs
+  become: true
+  roles:
+    - web

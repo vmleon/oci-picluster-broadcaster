@@ -1,8 +1,10 @@
 import {io} from 'socket.io-client';
 
+const SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
+
 let clusterCache = {};
 
-const socket = io('ws://localhost:3001');
+const socket = io(SERVER_URL);
 
 socket.io.on('error', (error) => postMessage({error}));
 
