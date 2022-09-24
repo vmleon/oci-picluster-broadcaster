@@ -20,6 +20,8 @@ logger.info(`CLUSTER_SIZE: ${CLUSTER_SIZE}`);
 const ids = initArrayOfIDs();
 let cluster = initCluster(ids);
 
+let numOfClients = 0;
+
 let clusterCache = {};
 
 let tracesPerSecond = 0;
@@ -32,12 +34,17 @@ const io = new Server(httpServer, {
 });
 
 io.on('connection', (socket) => {
+  ++numOfClients;
   socket.emit('cluster.all', cluster);
 
   socket.on('cluster.update', ({id, data}) => {
     clusterCache[id] = data;
     cluster[id] = data;
     ++tracesPerSecond;
+  });
+
+  socket.on('disconnect', () => {
+    --numOfClients;
   });
 });
 
@@ -47,6 +54,13 @@ setInterval(() => {
   }
   logger.info(`Cluster sent ${tracesPerSecond} traces per sec`);
   tracesPerSecond = 0;
+}, 1000);
+
+setInterval(() => {
+  if (!numOfClients) {
+    return;
+  }
+  logger.info(`${numOfClients} clients`);
 }, 1000);
 
 setInterval(() => {

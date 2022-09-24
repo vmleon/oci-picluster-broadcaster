@@ -11,3 +11,10 @@ server1 ansible_host=${server_public_ip}
 [servers:vars]
 ansible_user=opc
 ansible_private_key_file=~/.ssh/id_rsa
+
+[gens]
+gen1 ansible_host=${gen_public_ip}
+
+[gens:vars]
+ansible_user=opc
+ansible_private_key_file=~/.ssh/id_rsa

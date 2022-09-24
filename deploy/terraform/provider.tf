@@ -29,5 +29,5 @@ variable "cluster_size" {
 
 variable "broadcast_refresh_update" {
   type    = number
-  default = 100
+  default = 50
 }
