@@ -13,6 +13,7 @@ worker.postMessage({message: 'Hello from client'});
 function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [cluster, setCluster] = useState({});
+  const [metadata, setMetadata] = useState({});
 
   useEffect(() => {
     worker.onmessage = ({data: message}) => {
@@ -33,6 +34,9 @@ function App() {
           break;
         case 'all':
           setCluster(data);
+          break;
+        case 'metadata':
+          setMetadata(data);
           break;
         default:
           break;
@@ -58,7 +62,7 @@ function App() {
         ]}
       ></PageHeader>
       <Content style={{padding: '24px', minHeight: 400}}>
-        <ClusterVisor cluster={cluster} />
+        <ClusterVisor cluster={cluster} metadata={metadata} />
       </Content>
     </Layout>
   );

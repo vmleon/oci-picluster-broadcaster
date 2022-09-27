@@ -25,6 +25,10 @@ setInterval(() => {
   clusterCache = {};
 }, 1000);
 
+socket.on('cluster.metadata.client', (data) => {
+  postMessage({type: 'metadata', data});
+});
+
 socket.on('cluster.all', (cluster) => {
   clusterCache = {};
   postMessage({type: 'all', data: cluster});

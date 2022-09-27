@@ -1,0 +1,35 @@
+---
+- name: Install Node
+  dnf:
+    name: "@nodejs:16"
+    update_cache: yes
+- name: Copy server files
+  copy:
+    src: "../../../../../generator/{{ item }}"
+    dest: /home/opc/gen/
+    owner: opc
+  with_items:
+  - "src/gen.js"
+  - "package.json"
+  - "package-lock.json"
+- name: Copy env file
+  template:
+    src: ../files/env.j2
+    dest: /home/opc/gen/.env
+    owner: opc
+    group: opc
+    mode: 0744
+- name: Install dependencies
+  command: npm install
+  become: true
+  become_user: opc
+  args:
+    chdir: /home/opc/gen/
+- name: Install pm2
+  command: npm install pm2 -g
+- name: Run WebSocket Server
+  command: pm2 --node-args="--max-old-space-size=512" -f start gen.js
+  become: true
+  become_user: opc
+  args:
+    chdir: /home/opc/gen/

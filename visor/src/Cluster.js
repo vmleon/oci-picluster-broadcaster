@@ -1,5 +1,8 @@
+import React, {useState} from 'react';
 import {Card} from 'antd';
 import {Progress} from 'antd';
+import {Statistic} from 'antd';
+import {Drawer} from 'antd';
 import {Tooltip} from 'antd';
 import {Space} from 'antd';
 import {red, green, orange} from '@ant-design/colors';
@@ -16,22 +19,127 @@ function tempColor(temp) {
   }
 }
 
-function Cluster({cluster}) {
+function progressColor(percent) {
+  if (percent < 40.0) {
+    return green[6];
+  }
+  if (percent < 60.0) {
+    return orange[6];
+  }
+  if (percent < 80.0) {
+    return red[6];
+  }
+}
+
+function calculatePercentage(total, free) {
+  const usage = total - free;
+  const percent = (usage / total) * 100;
+  return Math.floor(percent);
+}
+
+function Cluster({cluster, metadata}) {
+  const [nodeSelectedId, setNodeSelectedId] = useState();
+
   return (
     <Space wrap={true}>
       {Object.keys(cluster).map((id) => (
-        <Card key={id} size="small" style={{width: 90}}>
+        <Card key={id} size="small" style={{width: 99}} onClick={() => setNodeSelectedId(id)}>
           <Tooltip title={id}>
-            <Progress
-              percent={cluster[id].temp}
-              steps={5}
-              size="small"
-              strokeColor={tempColor(cluster[id].temp)}
-            />
+            <p>{metadata[id].nodeName}</p>
+            <p>
+              <Statistic
+                title="Temp"
+                valueStyle={{fontSize: '10px'}}
+                suffix=" C"
+                value={cluster[id].temp}
+              />
+            </p>
+            <p>
+              CPU
+              <Progress
+                showInfo={true}
+                percent={cluster[id].cpu}
+                steps={10}
+                size="small"
+                strokeColor={tempColor(cluster[id].cpu)}
+              />
+            </p>
           </Tooltip>
         </Card>
       ))}
+      <Drawer
+        title="Pi Node Info"
+        placement="right"
+        onClose={() => setNodeSelectedId(null)}
+        open={nodeSelectedId}
+      >
+        <DrawerContent id={nodeSelectedId} cluster={cluster} metadata={metadata} />
+      </Drawer>
     </Space>
+  );
+}
+
+function DrawerContent({id, cluster, metadata}) {
+  if (!id) return;
+  if (!metadata) return;
+  if (!metadata[id]) return;
+  const {nodeName, side, orientation, memTotal, diskTotal, ip, mac} = metadata[id];
+  const {cpu, memFree, diskFree, processes} = cluster[id];
+  const memPercent = calculatePercentage(memTotal, memFree);
+  const diskPercent = calculatePercentage(diskTotal, diskFree);
+  return (
+    <>
+      <p>{`${nodeName} on ${side} ${orientation}`}</p>
+      <p>{`IP address: ${ip}`}</p>
+      <p>{`MAC address: ${mac}`}</p>
+      <p>
+        <Statistic
+          title="Temp"
+          valueStyle={{fontSize: '10px'}}
+          suffix=" C"
+          value={cluster[id].temp}
+        />
+      </p>
+      <p>
+        {`CPU: `}
+        <Progress
+          steps={10}
+          percent={cpu}
+          showInfo={cpu < 99 ? true : false}
+          strokeColor={progressColor(cpu)}
+        />
+      </p>
+      <p>
+        {`Mem usage: `}
+        <Progress
+          steps={10}
+          showInfo={memPercent < 99 ? true : false}
+          percent={memPercent}
+          strokeColor={progressColor(memPercent)}
+        />
+      </p>
+      <p>
+        {`Disk usage: `}
+        <Progress
+          steps={10}
+          showInfo={diskPercent < 99 ? true : false}
+          percent={diskPercent}
+          strokeColor={progressColor(memPercent)}
+        />
+      </p>
+      <p>
+        Processes (top 5):
+        {processes && processes.length ? (
+          <ul>
+            {processes.slice(0, 5).map((name) => (
+              <li key={name}>{name}</li>
+            ))}
+          </ul>
+        ) : (
+          'No data'
+        )}
+      </p>
+    </>
   );
 }
 

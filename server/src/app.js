@@ -24,6 +24,8 @@ let numOfClients = 0;
 
 let clusterCache = {};
 
+let clusterMetadata = {};
+
 let tracesPerSecond = 0;
 
 const io = new Server(httpServer, {
@@ -36,6 +38,7 @@ const io = new Server(httpServer, {
 io.on('connection', (socket) => {
   ++numOfClients;
   socket.emit('cluster.all', cluster);
+  socket.emit('cluster.metadata.client', clusterMetadata);
 
   socket.on('cluster.update', ({id, data}) => {
     clusterCache[id] = data;
@@ -43,7 +46,13 @@ io.on('connection', (socket) => {
     ++tracesPerSecond;
   });
 
+  socket.on('cluster.metadata', (data) => {
+    logger.info('Cluster metadata received');
+    clusterMetadata = data;
+  });
+
   socket.on('disconnect', () => {
+    clusterCache = {};
     --numOfClients;
   });
 });
