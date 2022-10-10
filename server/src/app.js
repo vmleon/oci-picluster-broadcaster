@@ -9,7 +9,7 @@ dotenv.config();
 const NODE_ENV = process.env.NODE_ENV;
 const BROADCAST_REFRESH_UPDATE = parseInt(process.env.BROADCAST_REFRESH_UPDATE);
 const CLUSTER_SIZE = parseInt(process.env.CLUSTER_SIZE);
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT) || 3000;
 const CORS_URL = process.env.CORS_URL || '*';
 
 const logger = pino({level: NODE_ENV === 'production' ? 'info' : 'debug'});
@@ -24,8 +24,6 @@ let numOfClients = 0;
 
 let clusterCache = {};
 
-let clusterMetadata = {};
-
 let tracesPerSecond = 0;
 
 const io = new Server(httpServer, {
@@ -38,17 +36,14 @@ const io = new Server(httpServer, {
 io.on('connection', (socket) => {
   ++numOfClients;
   socket.emit('cluster.all', cluster);
-  socket.emit('cluster.metadata.client', clusterMetadata);
 
-  socket.on('cluster.update', ({id, data}) => {
-    clusterCache[id] = data;
-    cluster[id] = data;
-    ++tracesPerSecond;
-  });
-
-  socket.on('cluster.metadata', (data) => {
-    logger.info('Cluster metadata received');
-    clusterMetadata = data;
+  socket.on('cluster.update', (clusterUpdate) => {
+    Object.keys(clusterUpdate).forEach((id) => {
+      const data = clusterUpdate[id];
+      clusterCache[id] = data;
+      cluster[id] = data;
+      ++tracesPerSecond;
+    });
   });
 
   socket.on('disconnect', () => {
@@ -73,6 +68,8 @@ setInterval(() => {
 }, 1000);
 
 setInterval(() => {
+  const clusterCacheLength = Object.keys(clusterCache).length;
+  if (!clusterCacheLength) return;
   io.emit('cluster.event', clusterCache);
   clusterCache = {};
 }, BROADCAST_REFRESH_UPDATE);
@@ -86,6 +83,17 @@ function initArrayOfIDs() {
 
 function initCluster(ids) {
   const cluster = {};
-  ids.forEach((id) => (cluster[id] = {}));
+  ids.forEach(
+    (id) =>
+      (cluster[id] = {
+        cpu: 25,
+        temp: 20,
+        memFree: 7000,
+        diskFree: 118000,
+        memTotal: 8000,
+        diskTotal: 128000,
+        processes: [],
+      }),
+  );
   return cluster;
 }

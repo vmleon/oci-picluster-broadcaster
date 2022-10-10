@@ -8,12 +8,9 @@ const {Content} = Layout;
 
 const worker = new Worker(new URL('./commsWorker.js', import.meta.url));
 
-worker.postMessage({message: 'Hello from client'});
-
 function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [cluster, setCluster] = useState({});
-  const [metadata, setMetadata] = useState({});
 
   useEffect(() => {
     worker.onmessage = ({data: message}) => {
@@ -23,20 +20,17 @@ function App() {
       }
       switch (type) {
         case 'connect':
-          const isConnected = data;
-          setIsConnected(isConnected);
-          if (!isConnected) {
-            setCluster({});
-          }
+          setIsConnected(true);
+          break;
+        case 'disconnect':
+          setCluster({});
+          setIsConnected(false);
           break;
         case 'event':
           setCluster({...cluster, ...data});
           break;
         case 'all':
           setCluster(data);
-          break;
-        case 'metadata':
-          setMetadata(data);
           break;
         default:
           break;
@@ -62,7 +56,7 @@ function App() {
         ]}
       ></PageHeader>
       <Content style={{padding: '24px', minHeight: 400}}>
-        <ClusterVisor cluster={cluster} metadata={metadata} />
+        <ClusterVisor cluster={cluster} />
       </Content>
     </Layout>
   );

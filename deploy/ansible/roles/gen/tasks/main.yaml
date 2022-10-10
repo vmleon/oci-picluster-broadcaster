@@ -18,7 +18,7 @@
     dest: /home/opc/gen/.env
     owner: opc
     group: opc
-    mode: 0744
+    mode: 0640
 - name: Install dependencies
   command: npm install
   become: true
@@ -27,7 +27,7 @@
     chdir: /home/opc/gen/
 - name: Install pm2
   command: npm install pm2 -g
-- name: Run WebSocket Server
+- name: Run
   command: pm2 --node-args="--max-old-space-size=512" -f start gen.js
   become: true
   become_user: opc

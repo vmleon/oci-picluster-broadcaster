@@ -48,8 +48,9 @@ resource "oci_load_balancer_backend_set" "lb_be_set_frontend" {
 }
 
 resource "oci_load_balancer_backend" "lb_be_frontend" {
+  count            = var.web_num_instances
   backendset_name  = oci_load_balancer_backend_set.lb_be_set_frontend.name
-  ip_address       = oci_core_instance.web[0].private_ip
+  ip_address       = oci_core_instance.web[count.index].private_ip
   load_balancer_id = oci_load_balancer.lb.id
   port             = 80
 }
@@ -68,8 +69,30 @@ resource "oci_load_balancer_backend_set" "lb_be_set_backend" {
 }
 
 resource "oci_load_balancer_backend" "lb_be_backend" {
+  count            = var.server_num_instances
   backendset_name  = oci_load_balancer_backend_set.lb_be_set_backend.name
-  ip_address       = oci_core_instance.server[0].private_ip
+  ip_address       = oci_core_instance.server[count.index].private_ip
+  load_balancer_id = oci_load_balancer.lb.id
+  port             = 3000
+}
+
+resource "oci_load_balancer_backend_set" "lb_be_set_api" {
+  name             = "lb_be_set_apis"
+  load_balancer_id = oci_load_balancer.lb.id
+  policy           = "ROUND_ROBIN"
+
+  health_checker {
+    port     = "3000"
+    protocol = "HTTP"
+    url_path = "/api/healthcheck"
+  }
+
+}
+
+resource "oci_load_balancer_backend" "lb_be_api" {
+  count            = var.api_num_instances
+  backendset_name  = oci_load_balancer_backend_set.lb_be_set_api.name
+  ip_address       = oci_core_instance.api[count.index].private_ip
   load_balancer_id = oci_load_balancer.lb.id
   port             = 3000
 }
@@ -85,6 +108,15 @@ resource "oci_load_balancer_load_balancer_routing_policy" "routing_policy" {
     actions {
       name             = "FORWARD_TO_BACKENDSET"
       backend_set_name = oci_load_balancer_backend_set.lb_be_set_backend.name
+    }
+  }
+
+  rules {
+    name      = "routing_to_api"
+    condition = "any(http.request.url.path sw (i '/api'))"
+    actions {
+      name             = "FORWARD_TO_BACKENDSET"
+      backend_set_name = oci_load_balancer_backend_set.lb_be_set_api.name
     }
   }
 
@@ -107,6 +139,6 @@ resource "oci_load_balancer_listener" "lb_listener" {
   protocol                 = "HTTP"
 
   connection_configuration {
-    idle_timeout_in_seconds = "2"
+    idle_timeout_in_seconds = "30"
   }
 }

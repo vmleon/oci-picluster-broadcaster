@@ -1,7 +1,7 @@
 import Cluster from './Cluster';
 
-function ClusterVisor({cluster = {}, metadata = {}}) {
-  return <Cluster cluster={cluster} metadata={metadata} />;
+function ClusterVisor({cluster = {}}) {
+  return <Cluster cluster={cluster} />;
 }
 
 export default ClusterVisor;

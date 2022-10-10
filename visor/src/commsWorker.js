@@ -9,11 +9,11 @@ const socket = io(SERVER_URL);
 socket.io.on('error', (error) => postMessage({error}));
 
 socket.on('connect', () => {
-  postMessage({type: 'connect', data: true});
+  postMessage({type: 'connect'});
 });
 
 socket.on('disconnect', () => {
-  postMessage({type: 'connect', data: false});
+  postMessage({type: 'disconnect'});
 });
 
 socket.on('cluster.event', (data) => {
@@ -24,10 +24,6 @@ setInterval(() => {
   postMessage({type: 'event', data: clusterCache});
   clusterCache = {};
 }, 1000);
-
-socket.on('cluster.metadata.client', (data) => {
-  postMessage({type: 'metadata', data});
-});
 
 socket.on('cluster.all', (cluster) => {
   clusterCache = {};

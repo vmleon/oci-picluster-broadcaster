@@ -1,21 +1,21 @@
 ---
-- name: Install NGINX and Node
+- name: Install Node
   dnf:
     name: "@nodejs:16"
     update_cache: yes
 - name: Copy server files
   copy:
-    src: "../../../../../server/{{ item }}"
-    dest: /home/opc/server/
+    src: "../../../../../api/{{ item }}"
+    dest: /home/opc/api/
     owner: opc
   with_items:
-  - "src/app.js"
+  - "api.js"
   - "package.json"
   - "package-lock.json"
 - name: Copy env file
   template:
     src: ../files/env.j2
-    dest: /home/opc/server/.env
+    dest: /home/opc/api/.env
     owner: opc
     group: opc
     mode: 0640
@@ -24,15 +24,15 @@
   become: true
   become_user: opc
   args:
-    chdir: /home/opc/server/
+    chdir: /home/opc/api/
 - name: Install pm2
   command: npm install pm2 -g
 - name: Run
-  command: pm2 --node-args="--max-old-space-size=512" -f start app.js
+  command: pm2 --node-args="--max-old-space-size=512" -f start api.js
   become: true
   become_user: opc
   args:
-    chdir: /home/opc/server/
+    chdir: /home/opc/api/
 - name: Add firewall port 3000
   firewalld:
     zone: public

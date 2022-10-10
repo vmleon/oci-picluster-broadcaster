@@ -37,33 +37,30 @@ function calculatePercentage(total, free) {
   return Math.floor(percent);
 }
 
-function Cluster({cluster, metadata}) {
+function Cluster({cluster = {}}) {
   const [nodeSelectedId, setNodeSelectedId] = useState();
+
+  if (!Object.keys(cluster).length) return null;
 
   return (
     <Space wrap={true}>
-      {Object.keys(cluster).map((id) => (
+      {Object.keys(cluster).map((id, pos) => (
         <Card key={id} size="small" style={{width: 99}} onClick={() => setNodeSelectedId(id)}>
           <Tooltip title={id}>
-            <p>{metadata[id].nodeName}</p>
-            <p>
-              <Statistic
-                title="Temp"
-                valueStyle={{fontSize: '10px'}}
-                suffix=" C"
-                value={cluster[id].temp}
-              />
-            </p>
-            <p>
-              CPU
-              <Progress
-                showInfo={true}
-                percent={cluster[id].cpu}
-                steps={10}
-                size="small"
-                strokeColor={tempColor(cluster[id].cpu)}
-              />
-            </p>
+            {`Body-${pos}`}
+            <Statistic
+              title="CPU"
+              valueStyle={{fontSize: '9px'}}
+              suffix="&#8451;"
+              value={cluster[id].temp}
+            />
+            <Progress
+              showInfo={true}
+              percent={cluster[id].cpu}
+              steps={10}
+              size="small"
+              strokeColor={tempColor(cluster[id].cpu)}
+            />
           </Tooltip>
         </Card>
       ))}
@@ -73,23 +70,23 @@ function Cluster({cluster, metadata}) {
         onClose={() => setNodeSelectedId(null)}
         open={nodeSelectedId}
       >
-        <DrawerContent id={nodeSelectedId} cluster={cluster} metadata={metadata} />
+        <DrawerContent id={nodeSelectedId} cluster={cluster} />
       </Drawer>
     </Space>
   );
 }
 
-function DrawerContent({id, cluster, metadata}) {
+function DrawerContent({id, cluster}) {
   if (!id) return;
-  if (!metadata) return;
-  if (!metadata[id]) return;
-  const {nodeName, side, orientation, memTotal, diskTotal, ip, mac} = metadata[id];
+  if (!cluster) return;
+  if (!cluster[id]) return;
+  const {side, orientation, memTotal, diskTotal, ip, mac} = cluster[id];
   const {cpu, memFree, diskFree, processes} = cluster[id];
   const memPercent = calculatePercentage(memTotal, memFree);
   const diskPercent = calculatePercentage(diskTotal, diskFree);
   return (
     <>
-      <p>{`${nodeName} on ${side} ${orientation}`}</p>
+      <p>{`Location ${side}, ${orientation}`}</p>
       <p>{`IP address: ${ip}`}</p>
       <p>{`MAC address: ${mac}`}</p>
       <p>
@@ -128,10 +125,10 @@ function DrawerContent({id, cluster, metadata}) {
         />
       </p>
       <p>
-        Processes (top 5):
+        Processes:
         {processes && processes.length ? (
           <ul>
-            {processes.slice(0, 5).map((name) => (
+            {processes.slice(0, 5).map(({pid, name}) => (
               <li key={name}>{name}</li>
             ))}
           </ul>
