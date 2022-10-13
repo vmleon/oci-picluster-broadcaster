@@ -32,6 +32,11 @@ variable "broadcast_refresh_update" {
   default = 50
 }
 
+variable "clean_stale_nodes_after" {
+  type    = number
+  default = 20000
+}
+
 variable "gen_instances_per_node" {
   type    = number
   default = 3

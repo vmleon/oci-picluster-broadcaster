@@ -24,6 +24,8 @@ const winstonConfig = {
 
 const logger = winston.createLogger(winstonConfig);
 
+logger.info(`NODE_ENV: ${NODE_ENV}`);
+
 logger.info(`Connecting to ${WEBSOCKET_SERVER_URL}`);
 const socket = io(WEBSOCKET_SERVER_URL);
 
@@ -63,7 +65,6 @@ setInterval(() => {
   if (!Object.keys(cache).length) {
     return;
   }
-  logger.debug(Object.keys(cache).length);
   socket.emit('cluster.update', cache);
   ++tracesPerSecond;
 }, DATA_UPDATE_FREQUENCY);

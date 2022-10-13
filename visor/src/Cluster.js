@@ -47,7 +47,7 @@ function Cluster({cluster = {}}) {
       {Object.keys(cluster).map((id, pos) => (
         <Card key={id} size="small" style={{width: 99}} onClick={() => setNodeSelectedId(id)}>
           <Tooltip title={id}>
-            {`Body-${pos}`}
+            {`Node ${pos}`}
             <Statistic
               title="CPU"
               valueStyle={{fontSize: '9px'}}

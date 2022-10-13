@@ -10,6 +10,8 @@ const API_URL = process.env.API_URL;
 
 const logger = pino({level: NODE_ENV === 'production' ? 'info' : 'debug'});
 
+logger.info(`NODE_ENV: ${NODE_ENV}`);
+
 logger.info(`Connecting to ${API_URL}`);
 
 let ids = [];
@@ -48,7 +50,7 @@ async function postClusterData(id, data) {
   }
 }
 
-loadClusterData();
+setInterval(loadClusterData, 2000);
 
 setInterval(() => {
   if (!tracesPerSecond) {
