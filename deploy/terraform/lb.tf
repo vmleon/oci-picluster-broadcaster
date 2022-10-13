@@ -1,5 +1,5 @@
 variable "load_balancer_shape_details_maximum_bandwidth_in_mbps" {
-  default = 40
+  default = 100
 }
 
 variable "load_balancer_shape_details_minimum_bandwidth_in_mbps" {
@@ -28,7 +28,7 @@ resource "oci_load_balancer" "lb" {
     minimum_bandwidth_in_mbps = var.load_balancer_shape_details_minimum_bandwidth_in_mbps
   }
 
-  display_name = "Load Balancer"
+  display_name = "picluster"
   reserved_ips {
     id = oci_core_public_ip.reserved_ip.id
   }

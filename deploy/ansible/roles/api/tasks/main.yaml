@@ -3,7 +3,7 @@
   dnf:
     name: "@nodejs:16"
     update_cache: yes
-- name: Copy server files
+- name: Copy files
   copy:
     src: "../../../../../api/{{ item }}"
     dest: /home/opc/api/
@@ -27,12 +27,6 @@
     chdir: /home/opc/api/
 - name: Install pm2
   command: npm install pm2 -g
-- name: Run
-  command: pm2 --node-args="--max-old-space-size=512" -f start api.js
-  become: true
-  become_user: opc
-  args:
-    chdir: /home/opc/api/
 - name: Add firewall port 3000
   firewalld:
     zone: public
@@ -40,3 +34,33 @@
     permanent: yes
     immediate: yes
     state: enabled
+- name: Daemonized pm2
+  command: "pm2 list"
+  become: true
+  become_user: opc
+- name: Register running apps
+  command: "pm2 list --mini-list"
+  become: true
+  become_user: opc
+  register: num_instances
+- name: PRINT DEBUG
+  debug:
+    msg: "{{ num_instances.stdout_lines }}"
+- name: Reload
+  command: pm2 reload --update-env api
+  become: true
+  become_user: opc
+  when: num_instances.stdout_lines | length > 0
+  environment:
+    NODE_ENV: production
+  args:
+    chdir: /home/opc/api/
+- name: Run
+  command: pm2 start api.js -i {{ api_instances_per_node }}
+  become: true
+  become_user: opc
+  when: num_instances.stdout_lines | length == 0
+  environment:
+    NODE_ENV: production
+  args:
+    chdir: /home/opc/api/

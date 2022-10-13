@@ -31,3 +31,13 @@ variable "broadcast_refresh_update" {
   type    = number
   default = 50
 }
+
+variable "gen_instances_per_node" {
+  type    = number
+  default = 3
+}
+
+variable "api_instances_per_node" {
+  type    = number
+  default = 2
+}
