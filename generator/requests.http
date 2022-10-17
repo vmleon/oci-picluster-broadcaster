@@ -1,0 +1,20 @@
+POST http://141.147.51.47/api/cluster
+content-type: application/json
+
+{
+    "CPU": "9.7", 
+    "MemoryFree": 655.3, 
+    "MemoryTotal": 877.6, 
+    "MemoryPercentage": "25.3", 
+    "DiskFree": 19.7, 
+    "DiskTotal": 50.0, 
+    "DiskPercentage": "60.6", 
+    "CPUTemperature": "32.7'C", 
+    "ip": "172.20.20.23", 
+    "mac": "b8:27:eb:70:e3:c4", 
+    "port": 4, 
+    "switch_ip": "172.20.80.211", 
+    "processes": [[]], 
+    "data": {}, 
+    "status": "true"
+}

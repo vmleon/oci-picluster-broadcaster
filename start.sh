@@ -32,6 +32,7 @@ sleep 2
 
 banner "Ansible Provisioning"
 export ANSIBLE_HOST_KEY_CHECKING=False
+export ANSIBLE_NOCOWS=1
 ansible-playbook -i ./generated/server.ini ../ansible/server.yaml \
   --extra-vars "@generated/backend_params.json"
 

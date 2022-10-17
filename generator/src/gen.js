@@ -1,30 +1,31 @@
 import pino from "pino";
 import * as dotenv from "dotenv";
-import shortid from "shortid";
 import fetch from "node-fetch";
 
 dotenv.config();
 
 const NODE_ENV = process.env.NODE_ENV;
-const CLUSTER_SIZE = parseInt(process.env.CLUSTER_SIZE);
+const NUM_SWITCHES = parseInt(process.env.NUM_SWITCHES);
+const NUM_PORTS = parseInt(process.env.NUM_PORTS);
 const DATA_UPDATE_FREQUENCY = parseInt(process.env.DATA_UPDATE_FREQUENCY);
 const API_URL = process.env.API_URL;
 
 const logger = pino({ level: NODE_ENV === "production" ? "info" : "debug" });
 
 logger.info(`Connecting to ${API_URL}`);
-logger.info(`CLUSTER_SIZE: ${CLUSTER_SIZE}`);
+logger.info(`NUM_SWITCHES: ${NUM_SWITCHES}`);
+logger.info(`NUM_PORTS: ${NUM_PORTS}`);
 
 logger.info("Deleting cluster data");
 deleteClusterData();
 
-let ids = initArrayOfIDs(CLUSTER_SIZE);
+let ids = initArrayOfIDs(NUM_SWITCHES, NUM_PORTS);
 let cluster = initCluster(ids);
 
 let tracesPerSecond = 0;
 
-async function postClusterData(id, data) {
-  const URL = `${API_URL}/api/cluster/${id}`;
+async function postClusterData(data) {
+  const URL = `${API_URL}/api/cluster/`;
   try {
     const response = await fetch(URL, {
       method: "POST",
@@ -73,8 +74,8 @@ setInterval(() => {
     return;
   }
   const randomId = ids[Math.floor(Math.random() * ids.length)];
-  cluster[randomId] = deltaDataPoint(randomId, cluster[randomId]);
-  postClusterData(randomId, cluster[randomId]);
+  cluster[randomId] = deltaDataPoint(randomId);
+  postClusterData(cluster[randomId]);
   ++tracesPerSecond;
 }, DATA_UPDATE_FREQUENCY);
 
@@ -93,7 +94,8 @@ function progressValue(
   return Math.floor(normalized);
 }
 
-function deltaDataPoint(id, dataPoint) {
+function deltaDataPoint(id) {
+  const [switch_ip, port] = id.split("-");
   let {
     cpu = 25,
     temp = 20,
@@ -102,7 +104,7 @@ function deltaDataPoint(id, dataPoint) {
     processes = [],
     memTotal,
     diskTotal,
-  } = dataPoint;
+  } = cluster[id];
   const currentTime = new Date();
   const idNumberHashed = hashCode(id);
   elapsedTime = currentTime - lastTime;
@@ -119,6 +121,8 @@ function deltaDataPoint(id, dataPoint) {
     { pid: 400, name: "rcu_gp", cpu_percent: 9, memory_percent: 5 },
   ];
   const data = {
+    switch_ip,
+    port,
     temp,
     cpu,
     memFree,
@@ -127,7 +131,7 @@ function deltaDataPoint(id, dataPoint) {
     ...calculatePosition(idNumberHashed),
     memTotal: 8000,
     diskTotal: 128000,
-    ip: `192.168.${(idNumberHashed / 5).toFixed(0)}.${idNumberHashed % 256}`,
+    ip: `172.168.${(idNumberHashed / 5).toFixed(0)}.${idNumberHashed % 256}`,
     mac: `00:B0:D0:63:${(idNumberHashed % 256).toString(16)}:${(
       idNumberHashed % 256
     ).toString(16)}`,
@@ -164,8 +168,15 @@ function calculatePosition(hashCode) {
   }
 }
 
-function initArrayOfIDs(size) {
-  const ids = new Array(size).fill(null).map(shortid.generate);
+function initArrayOfIDs(numSwitches, numPorts) {
+  const switchs = Array(numSwitches)
+    .fill(0)
+    .map((_, i) => `172.20.${i + 1}.1`);
+  const ports = Array(numPorts)
+    .fill(0)
+    .map((_, i) => i + 1);
+  let ids = [];
+  switchs.forEach((s) => ports.forEach((p) => ids.push(`${s}-${p}`)));
   return ids;
 }
 

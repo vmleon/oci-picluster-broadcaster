@@ -1,6 +1,6 @@
-import Cluster from './Cluster';
+import Cluster from "./Cluster";
 
-function ClusterVisor({cluster = {}}) {
+function ClusterVisor({ cluster = {} }) {
   return <Cluster cluster={cluster} />;
 }
 

@@ -3,7 +3,6 @@ region = "eu-frankfurt-1"
 tenancy_ocid        = "ocid1.tenancy.oc1..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 compartment_ocid    = "ocid1.compartment.oc1..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 ssh_public_key      = "ssh-rsa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-cluster_size             = 1050
 broadcast_refresh_update = 30
 gen_instances_per_node   = 3
 gen_num_instances        = 3

@@ -12,6 +12,21 @@ function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [cluster, setCluster] = useState({});
 
+  // useEffect(() => {
+  //   setInterval(() => {
+  //     const staleIds = Object.keys(cluster).filter((id) => {
+  //       const lastUpdated = cluster[id].lastUpdated;
+  //       const now = Date.now();
+  //       const elapsedTime = now - lastUpdated;
+  //       return elapsedTime > 20e4;
+  //     });
+  //     console.log("staleIds", staleIds);
+  //     let newCluster = cluster;
+  //     staleIds.forEach((id) => (newCluster[id].status = "offline"));
+  //     setCluster(newCluster);
+  //   }, 2000);
+  // }, [cluster]);
+
   useEffect(() => {
     worker.onmessage = ({ data: message }) => {
       const { type, data, error } = message;

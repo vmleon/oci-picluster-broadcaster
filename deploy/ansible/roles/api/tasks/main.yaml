@@ -9,9 +9,9 @@
     dest: /home/opc/api/
     owner: opc
   with_items:
-  - "api.js"
-  - "package.json"
-  - "package-lock.json"
+    - "api.js"
+    - "package.json"
+    - "package-lock.json"
 - name: Copy env file
   template:
     src: ../files/env.j2

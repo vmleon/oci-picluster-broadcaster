@@ -74,9 +74,11 @@ app.delete("/api/cluster", (req, res) => {
   res.json({});
 });
 
-app.post("/api/cluster/:id", (req, res) => {
-  const id = req.params.id;
-  const data = req.body;
+app.post("/api/cluster", (req, res) => {
+  const lastUpdated = Date.now();
+  const data = { ...req.body, lastUpdated, status: "online" };
+  const { switch_ip, port } = data;
+  const id = `${switch_ip}-${port}`;
   cache[id] = data;
   cluster[id] = data;
   res.json({});

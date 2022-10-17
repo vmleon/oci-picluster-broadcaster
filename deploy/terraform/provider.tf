@@ -22,9 +22,14 @@ variable "ssh_public_key" {}
 
 variable "config_file_profile" {}
 
-variable "cluster_size" {
+variable "num_switches" {
   type    = number
   default = 1024
+}
+
+variable "num_ports" {
+  type    = number
+  default = 42
 }
 
 variable "broadcast_refresh_update" {
