@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 const SERVER_URL =
-  process.env.NODE_ENV === "production" ? "" : "http://localhost:3001";
+  process.env.NODE_ENV === "production" ? "" : "http://picluster.makefile.io";
 
 let clusterCache = {};
 

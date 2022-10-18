@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card } from "antd";
+import { Card, Typography } from "antd";
 import { Progress } from "antd";
 import { Statistic } from "antd";
 import { Drawer } from "antd";
@@ -44,27 +44,26 @@ function Cluster({ cluster = {} }) {
 
   return (
     <Space wrap={true}>
-      {Object.keys(cluster).map((id, pos) => (
+      {Object.keys(cluster).map((id) => (
         <Card
           key={id}
           size="small"
-          style={{ width: 99 }}
+          style={{ width: 120 }}
           onClick={() => setNodeSelectedId(id)}
         >
           <Tooltip title={id}>
-            {`Body-${pos}`}
+            <Typography>{`${cluster[id].ip}`}</Typography>
             <Statistic
               title="CPU"
               valueStyle={{ fontSize: "9px" }}
-              suffix="&#8451;"
-              value={cluster[id].temp}
+              value={cluster[id].CPUTemperature}
             />
             <Progress
               showInfo={true}
-              percent={cluster[id].cpu}
+              percent={cluster[id].CPU}
               steps={10}
               size="small"
-              strokeColor={tempColor(cluster[id].cpu)}
+              strokeColor={tempColor(cluster[id].CPU)}
             />
           </Tooltip>
         </Card>
@@ -85,30 +84,29 @@ function DrawerContent({ id, cluster }) {
   if (!id) return;
   if (!cluster) return;
   if (!cluster[id]) return;
-  const { side, orientation, memTotal, diskTotal, ip, mac } = cluster[id];
-  const { cpu, memFree, diskFree, processes } = cluster[id];
-  const memPercent = calculatePercentage(memTotal, memFree);
-  const diskPercent = calculatePercentage(diskTotal, diskFree);
+  const { switch_ip, MemoryTotal, DiskTotal, ip, mac } = cluster[id];
+  const { CPU, MemoryFree, DiskFree, processes } = cluster[id];
+  const memPercent = calculatePercentage(MemoryTotal, MemoryFree);
+  const diskPercent = calculatePercentage(DiskTotal, DiskFree);
   return (
     <>
-      <p>{`Location ${side}, ${orientation}`}</p>
       <p>{`IP address: ${ip}`}</p>
       <p>{`MAC address: ${mac}`}</p>
+      <p>{`Switch IP: ${switch_ip}`}</p>
       <p>
         <Statistic
           title="Temp"
           valueStyle={{ fontSize: "10px" }}
-          suffix=" C"
-          value={cluster[id].temp}
+          value={cluster[id].CPUTemperature}
         />
       </p>
       <p>
         {`CPU: `}
         <Progress
           steps={10}
-          percent={cpu}
-          showInfo={cpu < 99 ? true : false}
-          strokeColor={progressColor(cpu)}
+          percent={CPU}
+          showInfo={CPU < 99 ? true : false}
+          strokeColor={progressColor(CPU)}
         />
       </p>
       <p>
